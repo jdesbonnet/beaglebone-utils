@@ -1,10 +1,16 @@
 #!/bin/bash
 # Relay IP trafic from beaglebone connected via USB
-BBB_USB_ETH=enx9059af64144d
-BBB_USB_ETH=enx84eb18e4ac9e
-#INTERNET_DEV=wlp2s0
-INTERNET_DEV=eno1
-iptables --table nat --append POSTROUTING --out-interface $INTERNET_DEV -j MASQUERADE
-iptables --append FORWARD --in-interface $BBB_USB_ETH -j ACCEPT
+
+# What is USB interface to BBB?
+BBB_USB_IF=(`netstat -i | grep enx`)
+echo "BBB USB interface: $BBB_USB_IF"
+
+# What is interface with default route on host?
+array=(`netstat -r -n | grep "^0.0.0.0"`)
+INTERNET_IF=${array[7]}
+echo "Internet interface: $INTERNET_IF"
+
+iptables --table nat --append POSTROUTING --out-interface $INTERNET_IF -j MASQUERADE
+iptables --append FORWARD --in-interface $BBB_USB_IF -j ACCEPT
 echo 1 > /proc/sys/net/ipv4/ip_forward
 
